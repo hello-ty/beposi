@@ -1,0 +1,25 @@
+{
+  "name": "beposi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node-dev app/app.js",
+    "connect": "sqlite3 app/db/database.sqlite3",
+    "tailwind:css": "npx tailwindcss -i ./app/public/css/tailwind.css -o ./app/public/css/main.css --watch"
+  },
+  "author": "yasui",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.0",
+    "daisyui": "^2.14.3",
+    "express": "^4.18.1",
+    "sqlite3": "^5.0.8"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.7",
+    "postcss-cli": "^9.1.0",
+    "tailwindcss": "^3.0.24"
+  }
+}

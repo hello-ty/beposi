@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Be Positive</title>
+    <!-- Load scripts -->
+    <script src="js/search.js" defer></script>
+    <script src="js/words.js" defer></script>
+    <script src="js/index.js" defer></script>
+    <link rel="stylesheet" href="./css/tailwind.css" />
+    <link rel="stylesheet" href="./css/main.css" />
+  </head>
+  <body>
+    <main
+      id="main"
+      class="bg-gray-200 w-script h-screen p-10 flex flex-col justify-center items-center"
+    >
+      <h1 class="text-5xl text-stone-700 text-">つぶやく</h1>
+      <div class="flex mt-7 mb-7">
+        <input
+          type="text"
+          id="search"
+          placeholder="ここに入力してください"
+          class="input input-bordered input-warning border-stone-700 focus:outline-stone-700 w-64 max-w-xs mr-5"
+        />
+        <button class="block btn bg-stone-700" id="search-btn">送信</button>
+      </div>
+      <div class="mockup-phone">
+        <div class="camera"></div>
+        <div class="display">
+          <div class="artboard artboard-demo phone-1">
+            <div id="content"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
