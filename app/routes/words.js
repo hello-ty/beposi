@@ -3,9 +3,9 @@ const words = express.Router();
 const sqlite3 = require("sqlite3");
 const dbPath = "app/db/database.sqlite3";
 
-const run = async (sql, db) => {
+const run = async (sql, values, db) => {
   return new Promise((resolve, reject) => {
-    db.run(sql, (err) => {
+    db.run(sql, values, (err) => {
       if (err) {
         return reject(err);
       } else {
@@ -33,7 +33,7 @@ words.get("/:id", (req, res) => {
   const db = new sqlite3.Database(dbPath);
   const id = req.params.id;
 
-  db.get(`SELECT * FROM words WHERE id = ${id}`, (err, row) => {
+  db.get("SELECT * FROM words WHERE id = ?", id, (err, row) => {
     res.json(row);
   });
 
@@ -53,7 +53,8 @@ words.post("/", async (req, res) => {
 
     try {
       await run(
-        `INSERT INTO words (text, mind) VALUES ("${text}", "${mind}")`,
+        "INSERT INTO words (text, mind) VALUES (?, ?)",
+        [text, mind],
         db
       );
       res.status(201).send({ message: "新規つぶやきを作成しました。" });
@@ -78,13 +79,14 @@ words.put("/:id", (req, res) => {
     const db = new sqlite3.Database(dbPath);
     const id = req.params.id;
 
-    db.get(`SELECT * FROM words WHERE id=${id}`, async (err, row) => {
+    db.get("SELECT * FROM words WHERE id=?", id, async (err, row) => {
       const text = req.body.text ? req.body.text : row.text;
       const mind = req.body.mind ? req.body.mind : row.mind;
 
       try {
         await run(
-          `UPDATE words SET text="${text}" , mind="${mind}" WHERE id = ${id}`,
+          "UPDATE words SET text=?, mind=? WHERE id = ?",
+          [text, mind, id],
           db
         );
         res.status(200).send({ message: "つぶやきを更新しました。" });
@@ -102,12 +104,12 @@ words.delete("/:id", async (req, res) => {
   const db = new sqlite3.Database(dbPath);
   const id = req.params.id;
 
-  db.get(`SELECT * FROM words WHERE id=${id}`, async (err, row) => {
+  db.get("SELECT * FROM words WHERE id=?", id, async (err, row) => {
     if (!row) {
       res.status(404).send({ error: "削除するつぶやきがありませんでした。" });
     } else {
       try {
-        await run(`DELETE FROM words WHERE id = ${id}`, db);
+        await run("DELETE FROM words WHERE id = ?", id, db);
         res.status(200).send({ message: "つぶやきを削除しました" });
       } catch (e) {
         res.status(500).send({ error: e });

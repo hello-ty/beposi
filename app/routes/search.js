@@ -9,7 +9,7 @@ search.get("/", (req, res) => {
   const db = new sqlite3.Database(dbPath);
   const keyword = req.query.q;
 
-  db.all(`SELECT * FROM words WHERE text="${keyword}"`, (err, row) => {
+  db.all("SELECT * FROM words WHERE text=?", keyword, (err, row) => {
     if (!row || row["0"] == undefined || row == null) {
       res.status(404).send({ error: "Ooops!!" });
     } else {
