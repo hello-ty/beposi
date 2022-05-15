@@ -1,71 +1,43 @@
 const express = require("express");
 const words = express.Router();
-const sqlite3 = require("sqlite3");
-const dbPath = "app/db/database.sqlite3";
+const db = require("../utility/DBUtil");
+const logger = require("../utility/Logger");
 
-const run = async (sql, values, db) => {
-  return new Promise((resolve, reject) => {
-    db.run(sql, values, (err) => {
-      if (err) {
-        return reject(err);
-      } else {
-        return resolve();
-      }
-    });
-  });
-};
-
-// Get all words
+// 全てのつぶやきを取得する
 words.get("/", (req, res) => {
-  // Connect to database
-  const db = new sqlite3.Database(dbPath);
-
-  db.all("SELECT * FROM words", (err, rows) => {
-    res.json(rows);
+  getAllWord((error, words) => {
+    res.json(words);
   });
-
-  db.close();
 });
 
-// Get a word
+// つぶやきを取得する
 words.get("/:id", (req, res) => {
-  // Connect to database
-  const db = new sqlite3.Database(dbPath);
   const id = req.params.id;
 
-  db.get("SELECT * FROM words WHERE id = ?", id, (err, row) => {
-    res.json(row);
+  getOneWord(id, (err, word) => {
+    res.json(word[0]);
   });
-
-  db.close();
 });
 
-// Create words
+// つぶやきを登録する
 words.post("/", async (req, res) => {
   if (!req.body.text || req.body.text === "") {
     res.status(404).send("ユーザー名が定義されてません。");
   } else {
-    // Connect database
-    const db = new sqlite3.Database(dbPath);
-
     const text = req.body.text;
     const mind = req.body.mind;
 
-    try {
-      await run(
-        "INSERT INTO words (text, mind) VALUES (?, ?)",
-        [text, mind],
-        db
-      );
-      res.status(201).send({ message: "新規つぶやきを作成しました。" });
-    } catch (e) {
-      res.status(500).send({ error: e });
-    }
-    db.close();
+    registerWord(text, mind, (error) => {
+      if (error) {
+        res.status(500).send({ error: "作成に失敗しました!!" });
+      } else {
+        res.status(201).json({ message: "新規つぶやきを作成しました。" });
+      }
+    });
   }
 });
 
-// Upadate word
+// つぶやきを編集する
 words.put("/:id", (req, res) => {
   if (
     !req.body.text ||
@@ -75,48 +47,145 @@ words.put("/:id", (req, res) => {
   ) {
     res.status(400).send({ error: "項目を全て入力してください" });
   } else {
-    // Connect database
-    const db = new sqlite3.Database(dbPath);
     const id = req.params.id;
 
-    db.get("SELECT * FROM words WHERE id=?", id, async (err, row) => {
-      const text = req.body.text ? req.body.text : row.text;
-      const mind = req.body.mind ? req.body.mind : row.mind;
+    getOneWord(id, (err, word) => {
+      const text = req.body.text ? req.body.text : word.text;
+      const mind = req.body.mind ? req.body.mind : word.mind;
 
-      try {
-        await run(
-          "UPDATE words SET text=?, mind=? WHERE id = ?",
-          [text, mind, id],
-          db
-        );
-        res.status(200).send({ message: "つぶやきを更新しました。" });
-      } catch (e) {
-        res.status(500).send({ error: e });
-      }
+      updateWord(text, mind, id, (error) => {
+        if (error) {
+          res.status(500).send({ error: "更新に失敗しました!!" });
+        } else {
+          res.status(200).json({ message: "つぶやきを更新しました。" });
+        }
+      });
     });
-    db.close();
   }
 });
 
-// Delete word
+// つぶやきを削除する
 words.delete("/:id", async (req, res) => {
-  // Connect database
-  const db = new sqlite3.Database(dbPath);
   const id = req.params.id;
 
-  db.get("SELECT * FROM words WHERE id=?", id, async (err, row) => {
-    if (!row) {
+  getOneWord(id, (err, word) => {
+    if (err) {
       res.status(404).send({ error: "削除するつぶやきがありませんでした。" });
     } else {
-      try {
-        await run("DELETE FROM words WHERE id = ?", id, db);
-        res.status(200).send({ message: "つぶやきを削除しました" });
-      } catch (e) {
-        res.status(500).send({ error: e });
-      }
+      deleteWord(id, (error) => {
+        if (error) {
+          res.status(404).send({ error: "削除に失敗しました!!" });
+        } else {
+          res.status(200).json({ message: "つぶやきを削除しました" });
+        }
+      });
     }
-    db.close();
   });
 });
+
+// 全てのつぶやきを取得
+function getAllWord(done) {
+  db.getConnection((error, dbc) => {
+    if (error) {
+      logger.error("DB connect error:" + error);
+      done({ error: "DB connect error" }, undefined);
+      return;
+    }
+    const sql = "SELECT * FROM words";
+    dbc.query(sql, (error, results) => {
+      dbc.end();
+      if (error) {
+        logger.error("error in SQL (" + sql + ") error = " + error);
+        done({ error: "DB select error" }, undefined);
+      } else {
+        done(undefined, results);
+      }
+    });
+  });
+}
+
+// つぶやきを取得
+function getOneWord(id, done) {
+  db.getConnection((error, dbc) => {
+    if (error) {
+      logger.error("DB connect error:" + error);
+      done({ error: "DB connect error" }, undefined);
+      return;
+    }
+    const sql = "SELECT * FROM words WHERE id = :id";
+    dbc.query(sql, { id }, (error, results) => {
+      dbc.end();
+      if (error) {
+        logger.error("error in SQL (" + sql + ") error = " + error);
+        done({ error: "DB select error" }, undefined);
+      } else {
+        done(undefined, results);
+      }
+    });
+  });
+}
+
+// つぶやきを作成
+function registerWord(text, mind, done) {
+  db.getConnection((error, dbc) => {
+    if (error) {
+      logger.error("DB connect error:" + error);
+      done({ error: "DB connect error" }, undefined);
+      return;
+    }
+    const sql = "INSERT INTO words (text, mind) VALUES (:text, :mind)";
+    dbc.query(sql, { text, mind }, (error) => {
+      dbc.end();
+      if (error) {
+        logger.error("error in SQL (" + sql + ") error = " + error);
+        done({ error: "DB register error" });
+      } else {
+        done(undefined);
+      }
+    });
+  });
+}
+
+// つぶやきを編集
+function updateWord(text, mind, id, done) {
+  db.getConnection((error, dbc) => {
+    if (error) {
+      logger.error("DB connect error:" + error);
+      done({ error: "DB connect error" }, undefined);
+      return;
+    }
+    const sql = "UPDATE words SET text = :text, mind = :mind WHERE id = :id";
+    dbc.query(sql, { text, mind, id }, (error) => {
+      dbc.end();
+      if (error) {
+        logger.error("error in SQL (" + sql + ") error = " + error);
+        done({ error: "DB update error" });
+      } else {
+        done(undefined);
+      }
+    });
+  });
+}
+
+// つぶやきを削除
+function deleteWord(id, done) {
+  db.getConnection((error, dbc) => {
+    if (error) {
+      logger.error("DB connect error:" + error);
+      done({ error: "DB connect error" }, undefined);
+      return;
+    }
+    const sql = "DELETE FROM words WHERE id = :id";
+    dbc.query(sql, { id }, (error) => {
+      dbc.end();
+      if (error) {
+        logger.error("error in SQL (" + sql + ") error = " + error);
+        done({ error: "DB delete error" });
+      } else {
+        done(undefined);
+      }
+    });
+  });
+}
 
 module.exports = words;

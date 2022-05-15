@@ -1,22 +1,39 @@
 const express = require("express");
 const search = express.Router();
-const sqlite3 = require("sqlite3");
-const dbPath = "app/db/database.sqlite3";
+const db = require("../utility/DBUtil");
+const logger = require("../utility/Logger");
 
 // 言葉を検索
 search.get("/", (req, res) => {
   // データベースに接続
-  const db = new sqlite3.Database(dbPath);
   const keyword = req.query.q;
-
-  db.all("SELECT * FROM words WHERE text=?", keyword, (err, row) => {
-    if (!row || row["0"] == undefined || row == null) {
-      res.status(404).send({ error: "Ooops!!" });
+  getKeyWord(keyword, (error, word) => {
+    if (error) {
+      res.status(404).send();
     } else {
-      res.status(200).json(row);
+      res.status(200).json(word);
     }
   });
-  db.close();
 });
+
+function getKeyWord(keyword, done) {
+  db.getConnection((error, dbc) => {
+    if (error) {
+      logger.error("DB connect error:" + error);
+      done({ error: "DB connect error" }, undefined);
+      return;
+    }
+    const sql = "SELECT * FROM words WHERE text = :text";
+    dbc.query(sql, { text: keyword }, (error, results) => {
+      dbc.end();
+      if (error) {
+        logger.error("error in SQL (" + sql + ") error = " + error);
+        done({ error: "DB select error" }, undefined);
+      } else {
+        done(undefined, results);
+      }
+    });
+  });
+}
 
 module.exports = search;
