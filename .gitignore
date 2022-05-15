@@ -1,7 +1,5 @@
 node_modules
-
-*.log
-
+logs
 package-lock.json
-
 .vscode
+.env
