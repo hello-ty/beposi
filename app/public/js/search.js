@@ -20,8 +20,8 @@ const searchModule = (() => {
 
         let mindColor = "text-stone-700";
 
-        if (res.status == 404) {
-          mindWord = resJson.error;
+        if (res.status == 404 || resJson["0"] == null) {
+          mindWord = "Ooops";
         } else if (res.status == 200) {
           switch (resJson["0"]["mind"]) {
             case 1:
@@ -43,7 +43,7 @@ const searchModule = (() => {
         }
 
         if (path == "/admin.html") {
-          body = `<p id="mind-word" class="text-5xl">${resJson["0"]["text"]}は「${mindWord}」</p>`;
+          body = `<p id="mind-word" class="text-5xl">「${mindWord}」</p>`;
         } else if (path == "/") {
           body = `<p id="mind-word" class="text-5xl ${mindColor}">${mindWord}</p>`;
         }
