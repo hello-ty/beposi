@@ -6,34 +6,17 @@ const logger = require("../utility/Logger");
 // 言葉を検索
 search.get("/", (req, res) => {
   // データベースに接続
-  const keyword = req.query.q;
-  getKeyWord(keyword, (error, word) => {
+  const text = req.query.q;
+  const sql = "SELECT * FROM words WHERE text = :text";
+
+  // クエリー実行
+  db.executeQuery(sql, { text }, (error, result) => {
     if (error) {
       res.status(404).send();
     } else {
-      res.status(200).json(word);
+      res.status(200).json(result);
     }
   });
 });
-
-function getKeyWord(keyword, done) {
-  db.getConnection((error, dbc) => {
-    if (error) {
-      logger.error("DB connect error:" + error);
-      done({ error: "DB connect error" }, undefined);
-      return;
-    }
-    const sql = "SELECT * FROM words WHERE text = :text";
-    dbc.query(sql, { text: keyword }, (error, results) => {
-      dbc.end();
-      if (error) {
-        logger.error("error in SQL (" + sql + ") error = " + error);
-        done({ error: "DB select error" }, undefined);
-      } else {
-        done(undefined, results);
-      }
-    });
-  });
-}
 
 module.exports = search;
