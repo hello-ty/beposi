@@ -9,21 +9,17 @@ const wordsModule = (() => {
 
     switch (res.status) {
       case 200:
-        alert(resJson.message);
+        alert("処理が成功しました");
         window.location.href = "/admin.html";
         break;
       case 201:
-        alert(resJson.message);
+        alert("つぶやきを作成しました");
         window.location.href = "/admin.html";
         break;
       case 400:
-        alert(resJson.error);
-        break;
       case 404:
-        alert(resJson.error);
-        break;
       case 500:
-        alert(resJson.error);
+        alert("処理に失敗しました");
         break;
       default:
         alert("何らかのエラーが発生しました。");

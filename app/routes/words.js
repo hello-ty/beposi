@@ -7,14 +7,7 @@ const logger = require("../utility/Logger");
 words.get("/", (req, res) => {
   const sql = "SELECT * FROM words";
 
-  (async () => {
-    try {
-      const response = await db.exeQuery(sql, "");
-      res.status(200).send(response);
-    } catch (err) {
-      res.status(404).send(err);
-    }
-  })();
+  getQueryResult(res, sql, "", 200, 404);
 });
 
 // つぶやきを取得する
@@ -22,15 +15,7 @@ words.get("/:id", (req, res) => {
   const id = req.params.id;
   const sql = "SELECT * FROM words WHERE id = :id";
 
-  // クエリー実行
-  (async () => {
-    try {
-      const response = await db.exeQuery(sql, { id });
-      res.status(200).send(response);
-    } catch (err) {
-      res.status(404).send(err);
-    }
-  })();
+  getQueryResult(res, sql, { id }, 200, 404);
 });
 
 // つぶやきを登録する
@@ -43,15 +28,7 @@ words.post("/", (req, res) => {
 
     const sql = "INSERT INTO words (text, mind) VALUES (:text, :mind)";
 
-    // クエリー実行
-    (async () => {
-      try {
-        await db.exeQuery(sql, { text, mind });
-        res.status(201).json({ message: "新規つぶやきを作成しました。" });
-      } catch (err) {
-        res.status(500).send({ error: "作成に失敗しました!!" });
-      }
-    })();
+    getQueryResult(res, sql, { text, mind }, 201, 500);
   }
 });
 
@@ -95,16 +72,17 @@ words.delete("/:id", (req, res) => {
   const id = req.params.id;
   const sql = "DELETE FROM words WHERE id = :id";
 
-  // クエリー実行
-  (async () => {
-    try {
-      // つぶやきを更新
-      await db.exeQuery(sql, { id });
-      res.status(200).json({ message: "つぶやきを削除しました" });
-    } catch (err) {
-      res.status(404).send({ error: "削除に失敗しました!!" });
-    }
-  })();
+  getQueryResult(res, sql, { id }, 200, 404);
 });
+
+// クエリーの結果を取得する
+async function getQueryResult(res, sql, values, successCode, errCode) {
+  try {
+    const response = await db.exeQuery(sql, values);
+    res.status(successCode).send(response);
+  } catch (err) {
+    res.status(errCode).send(err);
+  }
+}
 
 module.exports = words;
