@@ -10,13 +10,14 @@ search.get("/", (req, res) => {
   const sql = "SELECT * FROM words WHERE text = :text";
 
   // クエリー実行
-  db.executeQuery(sql, { text }, (error, result) => {
-    if (error) {
-      res.status(404).send();
-    } else {
-      res.status(200).json(result);
+  (async () => {
+    try {
+      const response = await db.exeQuery(sql, { text });
+      res.status(200).send(response);
+    } catch (err) {
+      res.status(404).send(err);
     }
-  });
+  })();
 });
 
 module.exports = search;

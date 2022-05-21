@@ -6,22 +6,35 @@ const logger = require("../utility/Logger");
 // 全てのつぶやきを取得する
 words.get("/", (req, res) => {
   const sql = "SELECT * FROM words";
-  db.executeQuery(sql, "", (error, results) => {
-    res.json(results);
-  });
+
+  (async () => {
+    try {
+      const response = await db.exeQuery(sql, "");
+      res.status(200).send(response);
+    } catch (err) {
+      res.status(404).send(err);
+    }
+  })();
 });
 
 // つぶやきを取得する
 words.get("/:id", (req, res) => {
   const id = req.params.id;
   const sql = "SELECT * FROM words WHERE id = :id";
-  db.executeQuery(sql, { id }, (error, result) => {
-    res.json(result[0]);
-  });
+
+  // クエリー実行
+  (async () => {
+    try {
+      const response = await db.exeQuery(sql, { id });
+      res.status(200).send(response);
+    } catch (err) {
+      res.status(404).send(err);
+    }
+  })();
 });
 
 // つぶやきを登録する
-words.post("/", async (req, res) => {
+words.post("/", (req, res) => {
   if (!req.body.text || req.body.text === "") {
     res.status(404).send("ユーザー名が定義されてません。");
   } else {
@@ -29,13 +42,16 @@ words.post("/", async (req, res) => {
     const mind = req.body.mind;
 
     const sql = "INSERT INTO words (text, mind) VALUES (:text, :mind)";
-    db.executeQuery(sql, { text, mind }, (error) => {
-      if (error) {
-        res.status(500).send({ error: "作成に失敗しました!!" });
-      } else {
+
+    // クエリー実行
+    (async () => {
+      try {
+        await db.exeQuery(sql, { text, mind });
         res.status(201).json({ message: "新規つぶやきを作成しました。" });
+      } catch (err) {
+        res.status(500).send({ error: "作成に失敗しました!!" });
       }
-    });
+    })();
   }
 });
 
@@ -56,42 +72,39 @@ words.put("/:id", (req, res) => {
     const sqlUpdate =
       "UPDATE words SET text = :text, mind = :mind WHERE id = :id";
 
-    // つぶやきを取得
-    db.executeQuery(sqlSelect, { id }, (error, result) => {
-      const text = req.body.text ? req.body.text : result.text;
-      const mind = req.body.mind ? req.body.mind : result.mind;
-      // つぶやきを更新
-      db.executeQuery(sqlUpdate, { text, mind, id }, (error) => {
-        if (error) {
-          res.status(500).send({ error: "更新に失敗しました!!" });
-        } else {
-          res.status(200).json({ message: "つぶやきを更新しました。" });
-        }
-      });
-    });
+    // クエリー実行
+    (async () => {
+      try {
+        // つぶやきを取得
+        const getSelect = await db.exeQuery(sqlSelect, { id });
+        const text = req.body.text ? req.body.text : getSelect.text;
+        const mind = req.body.mind ? req.body.mind : getSelect.mind;
+
+        // つぶやきを更新
+        await db.exeQuery(sqlUpdate, { text, mind, id });
+        res.status(200).json({ message: "つぶやきを更新しました。" });
+      } catch (err) {
+        res.status(500).send({ error: "更新に失敗しました!!" });
+      }
+    })();
   }
 });
 
 // つぶやきを削除する
-words.delete("/:id", async (req, res) => {
+words.delete("/:id", (req, res) => {
   const id = req.params.id;
+  const sql = "DELETE FROM words WHERE id = :id";
 
-  const sqlSelect = "SELECT * FROM words WHERE id = :id";
-  const sqlDelete = "DELETE FROM words WHERE id = :id";
-
-  // つぶやきを取得
-  db.executeQuery(sqlSelect, { id }, (error, result) => {
-    const text = req.body.text ? req.body.text : result.text;
-    const mind = req.body.mind ? req.body.mind : result.mind;
-    // つぶやきを削除
-    db.executeQuery(sqlDelete, { id }, (error) => {
-      if (error) {
-        res.status(404).send({ error: "削除に失敗しました!!" });
-      } else {
-        res.status(200).json({ message: "つぶやきを削除しました" });
-      }
-    });
-  });
+  // クエリー実行
+  (async () => {
+    try {
+      // つぶやきを更新
+      await db.exeQuery(sql, { id });
+      res.status(200).json({ message: "つぶやきを削除しました" });
+    } catch (err) {
+      res.status(404).send({ error: "削除に失敗しました!!" });
+    }
+  })();
 });
 
 module.exports = words;

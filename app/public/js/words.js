@@ -76,8 +76,8 @@ const wordsModule = (() => {
       const res = await fetch(BASE_URL + "/" + uid);
       const resJson = await res.json();
 
-      document.getElementById("text").value = resJson.text;
-      document.getElementById("mind").value = resJson.mind;
+      document.getElementById("text").value = resJson[0].text;
+      document.getElementById("mind").value = resJson[0].mind;
     },
     saveWord: async (uid) => {
       const text = document.getElementById("text").value;

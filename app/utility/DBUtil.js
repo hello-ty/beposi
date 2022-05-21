@@ -7,36 +7,35 @@ class DBUtil {
     this.mysql = require("mysql");
   }
 
-  executeQuery(sql, values, done) {
-    const connection = this.mysql.createConnection({
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-    });
+  async exeQuery(sql, values) {
+    return new Promise((resolve, reject) => {
+      const connection = this.mysql.createConnection({
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+      });
+      // データベースに接続
+      connection.connect((err) => {
+        if (err) {
+          logger.error("DB connect error: " + err);
+          reject(err);
+        } else {
+          // カスタムクエリー
+          this.useCustomQuery(connection);
 
-    // データベースに接続
-    connection.connect(async (err) => {
-      console.log(values);
-      if (err) {
-        logger.error("DB connect error: " + err);
-        await done(err, undefined);
-        return;
-      } else {
-        // カスタムクエリー
-        this.useCustomQuery(connection);
-
-        // クエリー実行
-        connection.query(sql, values, async (err, results) => {
-          connection.end();
-          if (err) {
-            logger.error("error in SQL (" + sql + ") error = " + err);
-            await done({ error: "DB select error" }, undefined);
-          } else {
-            await done(undefined, results);
-          }
-        });
-      }
+          // クエリー実行
+          connection.query(sql, values, (err, results) => {
+            connection.end();
+            if (err) {
+              logger.error("error in SQL (" + sql + ") error = " + err);
+              reject({ error: "DB select error" });
+            } else {
+              resolve(results);
+            }
+          });
+        }
+      });
     });
   }
 
