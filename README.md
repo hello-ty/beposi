@@ -26,10 +26,7 @@ npm run start
 
 ```
 # MySQLへの接続情報を設定する
-DB_HOST="hostname_of_MySQL_server"
-DB_USER="username_of_MySQL_server"
-DB_PASSWORD="password_of_MySQL_server"
-DB_NAME="database_name"
+DATABASE_URL="database_url_of_planetscale"
 
 # ログファイルを設定する
 LOG_DIR='path_of_log_directory'
