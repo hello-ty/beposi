@@ -4,22 +4,20 @@ require("dotenv").config();
 
 class DBUtil {
   constructor() {
-    this.mysql = require("mysql");
+    this.mysql = require("mysql2");
   }
 
-  async exeQuery(sql, values) {
+  exeQuery(sql, values) {
     return new Promise((resolve, reject) => {
-      const connection = this.mysql.createConnection({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
-      });
+      const connection = this.mysql.createConnection(process.env.DATABASE_URL);
       // データベースに接続
       connection.connect((err) => {
         if (err) {
           logger.error("DB connect error: " + err);
-          reject(err);
+          reject({
+            httpStatus: 500,
+            httpMessage: "サーバーで問題が発生しました。",
+          });
         } else {
           // カスタムクエリー
           this.useCustomQuery(connection);
@@ -27,11 +25,34 @@ class DBUtil {
           // クエリー実行
           connection.query(sql, values, (err, results) => {
             connection.end();
+
             if (err) {
               logger.error("error in SQL (" + sql + ") error = " + err);
-              reject({ error: "DB select error" });
+              reject({
+                httpStatus: 404,
+                httpMessage: "処理に失敗しました。",
+              });
             } else {
-              resolve(results);
+              let status = 200;
+              let message = "";
+
+              // クエリーがINSERTだった場合
+              if (!sql.indexOf("INSERT")) {
+                message = "作成が成功しました";
+                status = 201;
+              } else if (!sql.indexOf("UPDATE")) {
+                message = "編集が成功しました";
+              } else if (!sql.indexOf("DELETE")) {
+                message = "削除が成功しました";
+              } else if (!sql.indexOf("SELECT")) {
+                message = "取得が成功しました";
+              }
+
+              resolve({
+                httpStatus: status,
+                json: results,
+                httpMessage: message,
+              });
             }
           });
         }

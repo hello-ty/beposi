@@ -9,17 +9,19 @@ const wordsModule = (() => {
 
     switch (res.status) {
       case 200:
-        alert("処理が成功しました");
+        alert(resJson.message);
         window.location.href = "/admin.html";
         break;
       case 201:
-        alert("つぶやきを作成しました");
+        alert(resJson.message);
         window.location.href = "/admin.html";
         break;
       case 400:
       case 404:
+        alert(resJson.message);
+        break;
       case 500:
-        alert("処理に失敗しました");
+        alert(resJson.message);
         break;
       default:
         alert("何らかのエラーが発生しました。");
@@ -55,6 +57,12 @@ const wordsModule = (() => {
       const text = document.getElementById("text").value;
       const mind = document.getElementById("mind").value;
 
+      // バリデーション
+      if (!text) {
+        alert("テキストを入力してください");
+        return;
+      }
+
       const body = {
         text: text,
         mind: mind,
@@ -79,6 +87,12 @@ const wordsModule = (() => {
       const text = document.getElementById("text").value;
       const mind = document.getElementById("mind").value;
 
+      // バリデーション
+      if (!text) {
+        alert("テキストを入力してください");
+        return;
+      }
+
       const body = {
         text: text,
         mind: mind,
@@ -89,6 +103,7 @@ const wordsModule = (() => {
         headers: headers,
         body: JSON.stringify(body),
       });
+
       return handleError(res);
     },
     deleteWord: async (uid) => {
@@ -101,6 +116,7 @@ const wordsModule = (() => {
           method: "DELETE",
           headers: headers,
         });
+
         return handleError(res);
       }
     },

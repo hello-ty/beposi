@@ -7,17 +7,13 @@ const logger = require("../utility/Logger");
 search.get("/", (req, res) => {
   // データベースに接続
   const text = req.query.q;
-  const sql = "SELECT * FROM words WHERE text = :text";
 
   // クエリー実行
-  (async () => {
-    try {
-      const response = await db.exeQuery(sql, { text });
-      res.status(200).send(response);
-    } catch (err) {
-      res.status(404).send(err);
-    }
-  })();
+  db.exeQuery("SELECT * FROM words WHERE text = :text", { text })
+    .then((val) => res.status(val.httpStatus).send(val.json))
+    .catch((err) => {
+      res.status(err.httpStatus).send({ message: err.httpMessage });
+    });
 });
 
 module.exports = search;
