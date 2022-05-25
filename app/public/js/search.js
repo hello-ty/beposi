@@ -10,6 +10,7 @@ const searchModule = (() => {
 
       if (!query || query === "") {
         alert("入力してください");
+        return;
       } else {
         // 検索結果を削除
         const element = document.getElementById("mind-word");
