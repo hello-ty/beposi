@@ -18,7 +18,7 @@ git clone https://github.com/hello-ty/beposi.git
 cd beposi
 vi .env
 npm install
-npm run tailwind:css
+npm run compile
 npm run start
 ```
 

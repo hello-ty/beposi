@@ -1,12 +1,14 @@
-const express = require("express");
-const words = express.Router();
-const db = require("../utility/DBUtil");
+import { Router } from "express";
+import db from "../utility/DBUtil";
+
+// const app: express.Express = express();
+const words: Router = Router();
 
 // 全てのつぶやきを取得する
 words.get("/", (req, res) => {
   // クエリー実行
   db.exeQuery("SELECT * FROM words", "")
-    .then((val) => res.status(val.httpStatus).send(val.json))
+    .then((val: any) => res.status(val.httpStatus).send(val.json))
     .catch((err) =>
       res.status(err.httpStatus).send({ message: err.httpMessage })
     );
@@ -18,7 +20,7 @@ words.get("/:id", (req, res) => {
 
   // クエリー実行
   db.exeQuery("SELECT text, mind FROM words WHERE id = :id", { id })
-    .then((val) => res.status(val.httpStatus).send(val.json))
+    .then((val: any) => res.status(val.httpStatus).send(val.json))
     .catch((err) => {
       res.status(err.httpStatus).send({ message: err.httpMessage });
     });
@@ -34,7 +36,7 @@ words.post("/", (req, res) => {
     text,
     mind,
   })
-    .then((val) =>
+    .then((val: any) =>
       res.status(val.httpStatus).send({ message: val.httpMessage })
     )
     .catch((err) => {
@@ -48,14 +50,14 @@ words.put("/:id", (req, res) => {
 
   (async () => {
     // つぶやきを取得
-    const word = await db.exeQuery("SELECT * FROM words WHERE id = :i", {
+    const word: any = await db.exeQuery("SELECT * FROM words WHERE id = :id", {
       id,
     });
     const text = req.body.text ? req.body.text : word.text;
     const mind = req.body.mind ? req.body.mind : word.mind;
 
     // つぶやきを更新
-    const val = await db.exeQuery(
+    const val: any = await db.exeQuery(
       "UPDATE words SET text = :text, mind = :mind WHERE id = :id",
       {
         text,
@@ -77,7 +79,7 @@ words.delete("/:id", (req, res) => {
 
   // クエリー実行
   db.exeQuery("DELETE FROM words WHERE id = :id", { id })
-    .then((val) =>
+    .then((val: any) =>
       res.status(val.httpStatus).send({ message: val.httpMessage })
     )
     .catch((err) => {
@@ -85,4 +87,4 @@ words.delete("/:id", (req, res) => {
     });
 });
 
-module.exports = words;
+export default words;
