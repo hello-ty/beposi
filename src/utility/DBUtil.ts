@@ -1,17 +1,19 @@
-const logger = require("./Logger");
+import logger from "./Logger";
 
 require("dotenv").config();
 
 class DBUtil {
+  private mysql;
+
   constructor() {
     this.mysql = require("mysql2");
   }
 
-  exeQuery(sql, values) {
+  exeQuery(sql: any, values: any) {
     return new Promise((resolve, reject) => {
       const connection = this.mysql.createConnection(process.env.DATABASE_URL);
       // データベースに接続
-      connection.connect((err) => {
+      connection.connect((err: any) => {
         if (err) {
           logger.error("DB connect error: " + err);
           reject({
@@ -23,7 +25,7 @@ class DBUtil {
           this.useCustomQuery(connection);
 
           // クエリー実行
-          connection.query(sql, values, (err, results) => {
+          connection.query(sql, values, (err: any, results: any) => {
             connection.end();
 
             if (err) {
@@ -60,17 +62,17 @@ class DBUtil {
     });
   }
 
-  useCustomQuery(dbc) {
-    dbc.config.queryFormat = function (query, values) {
+  useCustomQuery(dbc: any) {
+    dbc.config.queryFormat = function (query: any, values: any) {
       if (!values) return query;
       return query.replace(
         /\:(\w+)/g,
-        function (txt, key) {
+        ((txt: any, key: any) => {
           if (values.hasOwnProperty(key)) {
             return this.escape(values[key]);
           }
           return txt;
-        }.bind(this)
+        }).bind(this)
       );
     };
   }
@@ -78,4 +80,4 @@ class DBUtil {
 
 const db = new DBUtil();
 
-module.exports = db;
+export default db;

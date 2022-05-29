@@ -20,6 +20,7 @@ const searchModule = (() => {
         const resJson = await res.json();
 
         let mindColor = "text-stone-700";
+        let mindWord;
 
         if (res.status == 404 || resJson["0"] == null) {
           mindWord = "Ooops";
@@ -42,6 +43,8 @@ const searchModule = (() => {
               break;
           }
         }
+
+        let body;
 
         if (path == "/admin.html") {
           body = `<p id="mind-word" class="text-5xl">「${mindWord}」</p>`;

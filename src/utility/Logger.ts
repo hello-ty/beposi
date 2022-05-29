@@ -1,6 +1,9 @@
 require("dotenv").config();
 
 class Logger {
+  private log4js;
+  private logger;
+
   constructor() {
     this.log4js = require("log4js");
     this.log4js.configure({
@@ -22,7 +25,7 @@ class Logger {
     return this.log4js.connectLogger(this.logger);
   }
 
-  info(message, ...options) {
+  info(message?: any, ...options: any[]) {
     var text = "";
     for (var i = 0; i < arguments.length; i++) {
       text += arguments[i];
@@ -30,7 +33,7 @@ class Logger {
     this.logger.info(text);
   }
 
-  warn(message, ...options) {
+  warn(message?: any, ...options: any[]) {
     var text = "";
     for (var i = 0; i < arguments.length; i++) {
       text += arguments[i];
@@ -38,7 +41,7 @@ class Logger {
     this.logger.warn(text);
   }
 
-  error(message, ...options) {
+  error(message?: any, ...options: any[]) {
     var text = "";
     for (var i = 0; i < arguments.length; i++) {
       text += arguments[i];
@@ -49,4 +52,4 @@ class Logger {
 
 const logger = new Logger();
 
-module.exports = logger;
+export default logger;
