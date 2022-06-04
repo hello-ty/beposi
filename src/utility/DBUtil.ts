@@ -9,7 +9,7 @@ class DBUtil {
     this.mysql = require("mysql2");
   }
 
-  exeQuery(sql: any, values: any) {
+  exeQuery(sql: string, values: object | "") {
     return new Promise((resolve, reject) => {
       const connection = this.mysql.createConnection(process.env.DATABASE_URL);
       // データベースに接続
@@ -31,30 +31,11 @@ class DBUtil {
             if (err) {
               logger.error("error in SQL (" + sql + ") error = " + err);
               reject({
-                httpStatus: 404,
-                httpMessage: "処理に失敗しました。",
+                httpStatus: 500,
+                httpMessage: "サーバーでエラーが発生しました。",
               });
             } else {
-              let status = 200;
-              let message = "";
-
-              // クエリーがINSERTだった場合
-              if (!sql.indexOf("INSERT")) {
-                message = "作成が成功しました";
-                status = 201;
-              } else if (!sql.indexOf("UPDATE")) {
-                message = "編集が成功しました";
-              } else if (!sql.indexOf("DELETE")) {
-                message = "削除が成功しました";
-              } else if (!sql.indexOf("SELECT")) {
-                message = "取得が成功しました";
-              }
-
-              resolve({
-                httpStatus: status,
-                json: results,
-                httpMessage: message,
-              });
+              resolve({ json: results });
             }
           });
         }
