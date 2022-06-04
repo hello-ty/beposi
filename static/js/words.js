@@ -5,23 +5,12 @@ const wordsModule = (() => {
   headers.set("Content-Type", "application/json");
 
   const handleError = async (res) => {
-    const resJson = await res.json();
-
     switch (res.status) {
       case 200:
-        alert(resJson.message);
         window.location.href = "/admin.html";
         break;
       case 201:
-        alert(resJson.message);
         window.location.href = "/admin.html";
-        break;
-      case 400:
-      case 404:
-        alert(resJson.message);
-        break;
-      case 500:
-        alert(resJson.message);
         break;
       default:
         alert("何らかのエラーが発生しました。");
