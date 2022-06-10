@@ -10,6 +10,7 @@ const searchModule = (() => {
 
       if (!query || query === "") {
         alert("入力してください");
+        return;
       } else {
         // 検索結果を削除
         const element = document.getElementById("mind-word");
@@ -19,9 +20,10 @@ const searchModule = (() => {
         const resJson = await res.json();
 
         let mindColor = "text-stone-700";
+        let mindWord;
 
-        if (res.status == 404) {
-          mindWord = resJson.error;
+        if (res.status == 404 || resJson["0"] == null) {
+          mindWord = "Ooops";
         } else if (res.status == 200) {
           switch (resJson["0"]["mind"]) {
             case 1:
@@ -42,8 +44,10 @@ const searchModule = (() => {
           }
         }
 
+        let body;
+
         if (path == "/admin.html") {
-          body = `<p id="mind-word" class="text-5xl">${resJson["0"]["text"]}は「${mindWord}」</p>`;
+          body = `<p id="mind-word" class="text-5xl">「${mindWord}」</p>`;
         } else if (path == "/") {
           body = `<p id="mind-word" class="text-5xl ${mindColor}">${mindWord}</p>`;
         }

@@ -5,25 +5,12 @@ const wordsModule = (() => {
   headers.set("Content-Type", "application/json");
 
   const handleError = async (res) => {
-    const resJson = await res.json();
-
     switch (res.status) {
       case 200:
-        alert(resJson.message);
         window.location.href = "/admin.html";
         break;
       case 201:
-        alert(resJson.message);
         window.location.href = "/admin.html";
-        break;
-      case 400:
-        alert(resJson.error);
-        break;
-      case 404:
-        alert(resJson.error);
-        break;
-      case 500:
-        alert(resJson.error);
         break;
       default:
         alert("何らかのエラーが発生しました。");
@@ -59,6 +46,12 @@ const wordsModule = (() => {
       const text = document.getElementById("text").value;
       const mind = document.getElementById("mind").value;
 
+      // バリデーション
+      if (!text) {
+        alert("テキストを入力してください");
+        return;
+      }
+
       const body = {
         text: text,
         mind: mind,
@@ -76,12 +69,18 @@ const wordsModule = (() => {
       const res = await fetch(BASE_URL + "/" + uid);
       const resJson = await res.json();
 
-      document.getElementById("text").value = resJson.text;
-      document.getElementById("mind").value = resJson.mind;
+      document.getElementById("text").value = resJson[0].text;
+      document.getElementById("mind").value = resJson[0].mind;
     },
     saveWord: async (uid) => {
       const text = document.getElementById("text").value;
       const mind = document.getElementById("mind").value;
+
+      // バリデーション
+      if (!text) {
+        alert("テキストを入力してください");
+        return;
+      }
 
       const body = {
         text: text,
@@ -93,6 +92,7 @@ const wordsModule = (() => {
         headers: headers,
         body: JSON.stringify(body),
       });
+
       return handleError(res);
     },
     deleteWord: async (uid) => {
@@ -105,6 +105,7 @@ const wordsModule = (() => {
           method: "DELETE",
           headers: headers,
         });
+
         return handleError(res);
       }
     },
